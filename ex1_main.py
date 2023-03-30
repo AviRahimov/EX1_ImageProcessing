@@ -3,7 +3,8 @@ from gamma import gammaDisplay
 import numpy as np
 import matplotlib.pyplot as plt
 import time
-
+import warnings
+warnings.filterwarnings("ignore")
 
 def histEqDemo(img_path: str, rep: int):
     img = imReadAndConvert(img_path, rep)
@@ -54,15 +55,15 @@ def main():
     imDisplay(img_path, LOAD_RGB)
 
     # # Convert Color spaces
-    img = imReadAndConvert(img_path, LOAD_RGB)
-    yiq_img = transformRGB2YIQ(img)
-    f, ax = plt.subplots(1, 2)
-    ax[0].imshow(img)
-    ax[1].imshow(yiq_img)
-    plt.show()
+    # img = imReadAndConvert(img_path, LOAD_RGB)
+    # yiq_img = transformRGB2YIQ(img)
+    # f, ax = plt.subplots(1, 2)
+    # ax[0].imshow(img)
+    # ax[1].imshow(yiq_img)
+    # plt.show()
 
     # # Image histEq
-    # histEqDemo(img_path, LOAD_GRAY_SCALE)
+    histEqDemo(img_path, LOAD_GRAY_SCALE)
     # histEqDemo(img_path, LOAD_RGB)
     #
     # # Image Quantization
