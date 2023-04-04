@@ -51,8 +51,8 @@ def main():
     img_path = 'beach.jpg'
 
     # Basic read and display
-    imDisplay(img_path, LOAD_GRAY_SCALE)
-    imDisplay(img_path, LOAD_RGB)
+    # imDisplay(img_path, LOAD_GRAY_SCALE)
+    # imDisplay(img_path, LOAD_RGB)
 
     # # Convert Color spaces
     # img = imReadAndConvert(img_path, LOAD_RGB)
@@ -63,8 +63,8 @@ def main():
     # plt.show()
 
     # # Image histEq
-    histEqDemo(img_path, LOAD_GRAY_SCALE)
-    # histEqDemo(img_path, LOAD_RGB)
+    # histEqDemo(img_path, LOAD_GRAY_SCALE)
+    histEqDemo(img_path, LOAD_RGB)
     #
     # # Image Quantization
     # quantDemo(img_path, LOAD_GRAY_SCALE)

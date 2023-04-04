@@ -86,7 +86,7 @@ def transformYIQ2RGB(imgYIQ: np.ndarray) -> np.ndarray:
     """
     inverse_chromatic_comp_mat = np.linalg.inv(chromatic_comp_mat)
     imgYIQ_mat = imgYIQ.reshape(-1, 3)
-    res_mat = np.array(np.dot(inverse_chromatic_comp_mat, imgYIQ_mat))
+    res_mat = np.array(np.dot(imgYIQ_mat, inverse_chromatic_comp_mat))
     RGB_mat = res_mat.reshape(imgYIQ.shape)
     return RGB_mat
 
@@ -97,27 +97,42 @@ def hsitogramEqualize(imgOrig: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarra
     :param imgOrig: Original Histogram
     :return: (imgEq,histOrg,histEQ)
     """
-    # imgOrig is a grayscale image
-    if len(imgOrig.shape) == 2:
-        imgEq = np.zeros(256)
-        norm_imgOrg = (imgOrig/imgOrig.max())
-        hist_imgOrg = np.histogram(norm_imgOrg)
-        norm_CumSum_imgOrg = (np.cumsum(norm_imgOrg))/(np.cumsum(norm_imgOrg).max())
-        LUT = norm_CumSum_imgOrg*255
-
-        for pix in imgOrig:
-            loc_arr = np.where(imgOrig == pix)[0]
-            imgEq[loc_arr[0]] = LUT[pix]
-
-        hist_imgEq = np.histogram(imgEq)
-        return imgEq, hist_imgEq, hist_imgOrg
+    Origimg = 0
+    YIQimg = 0
+    img_len = len(imgOrig.shape)
     # imgOrig is a RGB image
-    elif len(imgOrig.shape) == 3:
-        YIQ_arr = transformRGB2YIQ(imgOrig)
-        Y_channel = YIQ_arr[:, :, 0]
+    if img_len == 3:
+        # transform the image to YIQ image and taking only the Y channel
+        YIQimg = transformRGB2YIQ(imgOrig)
+        Origimg = YIQimg[:, :, 0]
+    # imgOrig is a grayscale image
+    elif img_len == 2:
+        # if the image is already RGB image so we leave it like that
+        Origimg = imgOrig
 
-    pass
-
+    # stretching the original image because the original image is between the range [0,1]
+    # stretched_imgOrg = np.ndarray(Origimg*255).astype('uint8')
+    stretched_imgOrg = cv2.normalize(Origimg, None, 0, 255, cv2.NORM_MINMAX).astype('uint8')
+    # calculating the histogram of the original image with 256 bins and take the first argument([0]) that is the data
+    hist_imgOrg = np.histogram(stretched_imgOrg.flatten(), bins=256)[0]
+    # calculating the cumulative sum of the original image and normalize it
+    CumSum_imgOrig = np.cumsum(hist_imgOrg)
+    norm_CumSum_imgOrg = CumSum_imgOrig / (CumSum_imgOrig.max())
+    # calculating the look up table for each intensity in the normalized cumulative sum and multiply it by 255
+    # so the range be between [0,255]
+    LUT = np.ceil(norm_CumSum_imgOrg * 255)
+    # changing the old colors by the new colors in the look up table
+    imgEq = stretched_imgOrg.copy()
+    for color in range(256):
+        imgEq[stretched_imgOrg == color] = LUT[color]
+    # normalize the equalized image and create histogram for it
+    imgEq = imgEq/imgEq.max()
+    hist_imgEq = np.histogram(imgEq.flatten(), bins=256)[0]
+    # if the original image was colored so we need to turn it back to RGB as we worked on the Y channel
+    if img_len == 3:
+        YIQimg[:, :, 0] = imgEq
+        imgEq = transformYIQ2RGB(YIQimg)
+    return imgEq, hist_imgOrg, hist_imgEq
 
 def quantizeImage(imOrig: np.ndarray, nQuant: int, nIter: int) -> (List[np.ndarray], List[float]):
     """
