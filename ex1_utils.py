@@ -66,30 +66,44 @@ def imDisplay(filename: str, representation: int):
     pass
 
 
+# def transformRGB2YIQ(imgRGB: np.ndarray) -> np.ndarray:
+#     """
+#     Converts an RGB image to YIQ color space
+#     :param imgRGB: An Image in RGB
+#     :return: A YIQ in image color space
+#     """
+#     imgRGB_mat = imgRGB.reshape(-1, 3)
+#     mat_mult = np.array(np.dot(imgRGB_mat, chromatic_comp_mat))
+#     YIQ_mat = mat_mult.reshape(imgRGB.shape)
+#     return YIQ_mat
 def transformRGB2YIQ(imgRGB: np.ndarray) -> np.ndarray:
-    """
-    Converts an RGB image to YIQ color space
-    :param imgRGB: An Image in RGB
-    :return: A YIQ in image color space
-    """
-    imgRGB_mat = imgRGB.reshape(-1, 3)
-    mat_mult = np.array(np.dot(imgRGB_mat, chromatic_comp_mat))
-    YIQ_mat = mat_mult.reshape(imgRGB.shape)
-    return YIQ_mat
+    if len(imgRGB.shape) == 2:
+        return
+    # Use np.einsum() to perform matrix multiplication without flattening and reshaping
+    imgYIQ = np.einsum('ijk,lk->ijl', imgRGB, chromatic_comp_mat)
+    # Display the output image
+    # Return the output image
+    return imgYIQ
 
-
+# def transformYIQ2RGB(imgYIQ: np.ndarray) -> np.ndarray:
+#     """
+#     Converts an YIQ image to RGB color space
+#     :param imgYIQ: An Image in YIQ
+#     :return: A RGB in image color space
+#     """
+#     inverse_chromatic_comp_mat = np.linalg.inv(chromatic_comp_mat)
+#     imgYIQ_mat = imgYIQ.reshape(-1, 3)
+#     res_mat = np.array(np.dot(imgYIQ_mat, inverse_chromatic_comp_mat))
+#     RGB_mat = res_mat.reshape(imgYIQ.shape)
+#     return RGB_mat
 def transformYIQ2RGB(imgYIQ: np.ndarray) -> np.ndarray:
-    """
-    Converts an YIQ image to RGB color space
-    :param imgYIQ: An Image in YIQ
-    :return: A RGB in image color space
-    """
+    # Define the matrix for converting YIQ to RGB
     inverse_chromatic_comp_mat = np.linalg.inv(chromatic_comp_mat)
-    imgYIQ_mat = imgYIQ.reshape(-1, 3)
-    res_mat = np.array(np.dot(imgYIQ_mat, inverse_chromatic_comp_mat))
-    RGB_mat = res_mat.reshape(imgYIQ.shape)
-    return RGB_mat
-
+    # Get the shape of the input image
+    imgRGB = np.einsum('ijk,lk->ijl', imgYIQ, inverse_chromatic_comp_mat)
+    # Display the output image
+    # Return the output image
+    return imgRGB
 
 def hsitogramEqualize(imgOrig: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarray):
     """
@@ -114,7 +128,7 @@ def hsitogramEqualize(imgOrig: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarra
     # stretched_imgOrg = np.ndarray(Origimg*255).astype('uint8')
     stretched_imgOrg = cv2.normalize(Origimg, None, 0, 255, cv2.NORM_MINMAX).astype('uint8')
     # calculating the histogram of the original image with 256 bins and take the first argument([0]) that is the data
-    hist_imgOrg = np.histogram(stretched_imgOrg.flatten(), bins=256)[0]
+    hist_imgOrg = np.histogram(stretched_imgOrg, bins=256)[0]
     # calculating the cumulative sum of the original image and normalize it
     CumSum_imgOrig = np.cumsum(hist_imgOrg)
     norm_CumSum_imgOrg = CumSum_imgOrig / (CumSum_imgOrig.max())
@@ -126,12 +140,14 @@ def hsitogramEqualize(imgOrig: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarra
     for color in range(256):
         imgEq[stretched_imgOrg == color] = LUT[color]
     # normalize the equalized image and create histogram for it
-    imgEq = imgEq/imgEq.max()
-    hist_imgEq = np.histogram(imgEq.flatten(), bins=256)[0]
+    # imgEq = imgEq/imgEq.max()
+    hist_imgEq = np.histogram(imgEq, bins=256)[0]
     # if the original image was colored so we need to turn it back to RGB as we worked on the Y channel
+    imgEq = imgEq / imgEq.max()
     if img_len == 3:
         YIQimg[:, :, 0] = imgEq
         imgEq = transformYIQ2RGB(YIQimg)
+
     return imgEq, hist_imgOrg, hist_imgEq
 
 def quantizeImage(imOrig: np.ndarray, nQuant: int, nIter: int) -> (List[np.ndarray], List[float]):
