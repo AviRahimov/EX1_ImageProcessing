@@ -47,31 +47,34 @@ def quantDemo(img_path: str, rep: int):
 
 
 def main():
-    print("ID:", myID())
-    img_path = 'beach.jpg'
+    # images = ['beach.jpg', 'bac_con.png', 'water_bear.png', 'dark.jpg', 'AI.jpg', 'dog.png']
+    # images = ['AI.jpg', 'dog.png']
+    # for img_path in images:
+        print("ID:", myID())
+        img_path = 'dog.png'
 
-    # Basic read and display
-    # imDisplay(img_path, LOAD_GRAY_SCALE)
-    # imDisplay(img_path, LOAD_RGB)
+        # Basic read and display
+        imDisplay(img_path, LOAD_GRAY_SCALE)
+        imDisplay(img_path, LOAD_RGB)
 
-    # # Convert Color spaces
-    # img = imReadAndConvert(img_path, LOAD_RGB)
-    # yiq_img = transformRGB2YIQ(img)
-    # f, ax = plt.subplots(1, 2)
-    # ax[0].imshow(img)
-    # ax[1].imshow(yiq_img)
-    # plt.show()
+        # # Convert Color spaces
+        img = imReadAndConvert(img_path, LOAD_RGB)
+        yiq_img = transformRGB2YIQ(img)
+        f, ax = plt.subplots(1, 2)
+        ax[0].imshow(img)
+        ax[1].imshow(yiq_img)
+        plt.show()
 
-    # # Image histEq
-    # histEqDemo(img_path, LOAD_GRAY_SCALE)
-    histEqDemo(img_path, LOAD_RGB)
-    #
-    # # Image Quantization
-    # quantDemo(img_path, LOAD_GRAY_SCALE)
-    # quantDemo(img_path, LOAD_RGB)
-    #
-    # # Gamma
-    # gammaDisplay(img_path, LOAD_GRAY_SCALE)
+        # # Image histEq
+        histEqDemo(img_path, LOAD_GRAY_SCALE)
+        histEqDemo(img_path, LOAD_RGB)
+        #
+        # # Image Quantization
+        quantDemo(img_path, LOAD_GRAY_SCALE)
+        quantDemo(img_path, LOAD_RGB)
+        #
+        # # Gamma
+        gammaDisplay(img_path, LOAD_GRAY_SCALE)
 
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import mean_squared_error as MSE
-from sklearn.cluster import KMeans
+# from sklearn.cluster import KMeans
 
 LOAD_GRAY_SCALE = 1
 LOAD_RGB = 2
@@ -67,6 +67,7 @@ def imDisplay(filename: str, representation: int):
         plt.imshow(img_arr)
         plt.show()
 
+
 def transformRGB2YIQ(imgRGB: np.ndarray) -> np.ndarray:
     """
     Converts an RGB image to YIQ color space
@@ -80,6 +81,7 @@ def transformRGB2YIQ(imgRGB: np.ndarray) -> np.ndarray:
     # Display the output image
     # Return the output image
     return imgYIQ
+
 
 def transformYIQ2RGB(imgYIQ: np.ndarray) -> np.ndarray:
     """
@@ -102,18 +104,8 @@ def hsitogramEqualize(imgOrig: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarra
     :param imgOrig: Original Histogram
     :return: (imgEq,histOrg,histEQ)
     """
-    Origimg = imgOrig.copy()
-    YIQimg = imgOrig.copy()
-    img_len = len(imgOrig.shape)
-    # imgOrig is a RGB image
-    if img_len == 3:
-        # transform the image to YIQ image and taking only the Y channel
-        YIQimg = transformRGB2YIQ(imgOrig)
-        Origimg = YIQimg[:, :, 0]
-    # imgOrig is a grayscale image
-    elif img_len == 2:
-        # if the image is already RGB image so we leave it like that
-        Origimg = imgOrig
+    Origimg = Color_Or_Gray_Image(imgOrig)
+    YIQimg = transformRGB2YIQ(imgOrig)
 
     # stretching the original image because the original image is between the range [0,1]
     stretched_imgOrg = cv2.normalize(Origimg, None, 0, 255, cv2.NORM_MINMAX).astype('uint8')
@@ -134,7 +126,7 @@ def hsitogramEqualize(imgOrig: np.ndarray) -> (np.ndarray, np.ndarray, np.ndarra
     hist_imgEq = np.histogram(imgEq, bins=256)[0]
     # if the original image was colored so we need to turn it back to RGB as we worked on the Y channel
     imgEq = imgEq / imgEq.max()
-    if img_len == 3:
+    if len(imgOrig) == 3:
         YIQimg[:, :, 0] = imgEq
         imgEq = transformYIQ2RGB(YIQimg)
 
@@ -155,20 +147,8 @@ def quantizeImage(imOrig: np.ndarray, nQuant: int, nIter: int) -> (List[np.ndarr
     error = []
     # The borders which divide the histograms into segments, size of z = nQuant+1.
     z = []
-    Origimg = 0
-    YIQimg = 0
-    Quantimg = 0
-    img_len = len(imOrig.shape)
-
-    # imgOrig is a RGB image
-    if img_len == 3:
-        # transform the image to YIQ image and taking only the Y channel.
-        YIQimg = transformRGB2YIQ(imOrig)
-        Origimg = YIQimg[:, :, 0]
-    # imgOrig is a grayscale image
-    elif img_len == 2:
-        # if the image is already RGB image so we leave it like that
-        Origimg = imOrig
+    Origimg = Color_Or_Gray_Image(imOrig)
+    YIQimg = transformRGB2YIQ(imOrig)
 
     # stretching the original image because the original image is between the range [0,1]
     stretched_imgOrg = cv2.normalize(Origimg, None, 0, 255, cv2.NORM_MINMAX).astype('uint8')
@@ -204,14 +184,14 @@ def quantizeImage(imOrig: np.ndarray, nQuant: int, nIter: int) -> (List[np.ndarr
         for i in range(len(q) - 1):
             z.append(int((q[i] + q[i + 1]) / 2))
         z.append(255)
-        MSE_error = MSE(Origimg*255, Quantimg)
+        MSE_error = MSE(Origimg * 255, Quantimg)
         error.append(MSE_error)
         if iteration > 5:
             if check_MSE_convergence(error, math.pow(10, -5)):
                 break
-        qImage.append(Quantimg/255.0)
+        qImage.append(Quantimg / 255.0)
     # if the image is colored so we need to convert it back to RGB since we worked on the Y channel
-    if img_len == 3:
+    if len(imOrig) == 3:
         for i in range(len(qImage)):
             YIQimg[:, :, 0] = qImage[i]
             qImage[i] = transformYIQ2RGB(YIQimg)
@@ -225,6 +205,18 @@ def check_MSE_convergence(MSE_list: list, tolerance: float) -> bool:
         if (MSE_list[i] - MSE_list[i + 1]) > tolerance:
             return False
     return True
+
+def Color_Or_Gray_Image(img: np.ndarray) -> np.ndarray:
+    img_len = len(img.shape)
+
+    # imgOrig is a RGB image
+    if img_len == 3:
+        # transform the image to YIQ image and taking only the Y channel.
+        return transformRGB2YIQ(img)[:, :, 0]
+    # imgOrig is a grayscale image
+    elif img_len == 2:
+        # if the image is already RGB image so we leave it like that
+        return img
 
 # Kmeans implementation for image quantization
 # def quantizeImage(img, num_colors, num_iterations):
