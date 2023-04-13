@@ -47,11 +47,11 @@ def quantDemo(img_path: str, rep: int):
 
 
 def main():
-    # images = ['beach.jpg', 'bac_con.png', 'water_bear.png', 'dark.jpg', 'AI.jpg', 'dog.png']
-    # images = ['AI.jpg', 'dog.png']
+    # images = ['beach.jpg', 'bac_con.png', 'water_bear.png', 'dark.jpg', 'testImg1.jpg', 'testImg2.png']
+    # images = ['testImg1.jpg', 'testImg2.png']
     # for img_path in images:
         print("ID:", myID())
-        img_path = 'dog.png'
+        img_path = 'testImg2.png'
 
         # Basic read and display
         imDisplay(img_path, LOAD_GRAY_SCALE)
