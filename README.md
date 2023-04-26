@@ -22,5 +22,5 @@ To use these functions, first import the ex1.utils.py file. Then, call the desir
 Clone the repository:
 git clone https://github.com/AviRahimov/EX1_ImageProcessing.git
 
-####install the dependencies:
+#### install the dependencies:
 pip install numpy opencv-python matplotlib scikit-learn
